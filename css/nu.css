@@ -1,0 +1,32 @@
+/*
+
+RESETS
+
+*/
+html, body {
+    background: #F2F2F2;
+}
+.logo {
+    display: block;
+    position: relative;
+    height: 21px;
+    left: 50%;
+    margin: 40px 0 40px -40px;
+    position: relative;
+    width: 81px;
+}
+.heading {
+    display: block;
+    position: relative;
+    text-align: center;
+    color: #333;
+    padding: 10px 0;
+    font-size: 16px;
+    border-bottom: 1px dotted #CCC;
+}
+
+/*
+
+EDIT PAGE
+
+*/

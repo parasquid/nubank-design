@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+<title>NuBank</title>
+<link rel='shortcut icon' href='favicon.ico'>
+<link href="css/bootstrap.css" type="text/css" rel="stylesheet">
+<link href="css/nu.css" type="text/css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    
+    <img src="img/logo.png" class="logo" />
+    
+    <h2 class="heading">Edit User</h2>
+
+    <form class="edit_user" id="edit_user_1" action="/users/1" accept-charset="UTF-8" method="post"><input name="utf8" type="hidden" value="&#x2713;" />
+        <input type="hidden" name="_method" value="patch" />
+        <input type="hidden" name="authenticity_token" value="3NWfCiR07EG+HpK0AVKWNoXVEZATLoPmIm324DttZd6JcHlx/ddqysUNxeOPCyvkbezhxc6OUlil4OrcyaL3ng==" />
+        <p>
+        <label for="user_number">Number</label><br />
+        <input type="text" value="+17572558747" name="user[number]" id="user_number" class="form-control" />
+        <p>
+        <label for="user_name">Name</label><br />
+        <input type="text" value="Tristan" name="user[name]" id="user_name" class="form-control" />
+        <p>
+        <input type="submit" name="commit" value="Update User" class="btn btn-success pull-right" />
+        <p class="clearfix"></p>
+    </form>
+    
+    <hr>
+
+    <h2 class="heading">Received Transactions</h2>
+      No transactions found
+
+    <h2 class="heading">Sent Transactions</h2>
+      No transactions found
+
+    <hr>
+
+    <button class="btn btn-default modal-trigger" data-id="add-deposit">Add Deposit</button>
+    <button class="btn btn-default modal-trigger" data-id="withdraw-funds">Withdraw</button>
+    
+    <p class="clearfix"></p>
+
+</div>
+    
+<!-- HIDDEN FORMS FOR MODALS -->
+    
+<div class="hidden" id="add-deposit">
+    <form id="deposit">
+        <input type="text" class="form-control" />
+        <hr>
+        <input type="submit" class="btn btn-success pull-right" />
+        <p class="clearfix"></p>
+    </form>
+</div>
+    
+<div class="hidden" id="withdraw-funds">
+    <form id="withdraw">
+        <input type="text" class="form-control" />
+        <hr>
+        <input type="submit" class="btn btn-success pull-right" />
+        <p class="clearfix"></p>
+    </form>
+</div>
+    
+<div id="default-modal" class="modal fade" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button data-dismiss="modal" class="close" type="button">
+                    <span aria-hidden="true">×</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body no-footer"></div>
+        </div>
+    </div>
+</div>
+    
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/blockstrap/crypto.js"></script>
+<script src="js/blockstrap/sha3.js"></script>
+<script src="js/blockstrap/bitcoinjs-lib.js"></script>
+<script src="js/bs.options.js"></script>
+<script src="js/blockstrap.js"></script>
+<script src="js/blockstrap/api.js"></script>
+<script src="js/blockstrap/blockchains.js"></script>
+<script src="js/nu.js"></script>
+    
+</body>
+</html>
