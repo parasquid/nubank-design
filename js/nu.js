@@ -1,6 +1,6 @@
 var current_blockchain = 'doget';
-var private_key = 'cjCmuzx1T4YK2cciUzzJyx2qtAcKPyj4b5YwW4YtndyzgMgiV6rJ';
-var public_key = 'nZvwQw2wi4819zWVppN8AKHNovMPHjoDy8';
+var private_key = 'cmEZ1Y4DogQfubCFDQvahz4g5LB7kf9FgdjJw9ywjypd4GLwMh9A';
+var public_key = 'njV9KyXAUJLB6gexQuZz9qPy4qprronsAS';
 
 var nu_bank = 
 {
@@ -32,68 +32,103 @@ var nu_bank =
         setTimeout(function () 
         {
             $.ajax({
-                url: 'events.json',
-                data: {},
+                url: 'http://nu-bank.herokuapp.com/data/source',
                 dataType: 'json',
-                method: 'post',
                 complete: function(results)
                 {
-                    nu_bank.process(results);
+                    if(typeof results.responseJSON != 'undefined')
+                    {
+                        nu_bank.process(results.responseJSON);
+                    }
+                    else
+                    {
+                        nu_bank.poll();
+                    }
                 }
             });
         }, timeout);
     },
-    process: function(results)
+    process: function(the_results)
     {
-        console.log('process results', results);
-        var from = '';
-        var to = '';
-        var hub = '';
-        var ts = '';
-        var amount = '';
-        var transfer_data = '';
-        if(typeof results.success != 'undefined' && results.success === true)
+        if($.isArray(the_results))
         {
-            $.fn.blockstrap.api.unspents(public_key, current_blockchain, function(unspents)
+            var tx_results = [];
+            var all_unspents = false;
+            var tx_count = blockstrap_functions.array_length(the_results);
+            $.each(the_results, function(k, obj)
             {
-                if($.isArray(unspents) && blockstrap_functions.array_length(unspents) > 0)
-                {
-                    var total = 0; 
-                    var inputs = [];
-                    var fee = $.fn.blockstrap.settings.blockchains[current_blockchain].fee;
-                    $.each(unspents, function(k, unspent)
+                //var obj = the_results[index];
+                //index++;
+                if(
+                    typeof obj.id != 'undefined'
+                    && typeof obj.receiver_id != 'undefined'
+                    && typeof obj.sender_id != 'undefined'
+                    && typeof obj.hub_id != 'undefined'
+                    && typeof obj.amount != 'undefined'
+                    && typeof obj.created_at != 'undefined'
+                    && typeof obj.updated_at != 'undefined'
+                    && typeof obj.is_pushed != 'undefined'
+                    && obj.is_pushed === false
+                ){
+                    var created = new Date().getTime(obj.created_at);
+                    var updated = new Date().getTime(obj.updated_at);
+                    var transfer_data = obj.id + '|' + obj.receiver_id + '|' + obj.sender_id + '|' + obj.hub_id + '|' + obj.amount + '|' + created + '|' + updated;
+                    $.fn.blockstrap.api.unspents(public_key, current_blockchain, function(unspents)
                     {
-                        inputs.push({
-                            txid: unspent.txid,
-                            n: unspent.index,
-                            script: unspent.script,
-                            value: unspent.value,
-                        });
-                        total = total + unspent.value
-                    });
-                    var outputs = [{
-                        address: public_key,
-                        value: total - fee
-                    }];
-                    var raw_tx = $.fn.blockstrap.blockchains.raw(
-                        public_key,
-                        private_key,
-                        inputs,
-                        outputs,
-                        fee,
-                        total - fee,
-                        transfer_data
-                    );
-                    $.fn.blockstrap.api.relay(raw_tx, current_blockchain, function(results)
-                    {
-                        // Your callback, results should be a TXID (if successful)
-                        console.log('relay results', results);
-                        nu_bank.poll(10000);
+                        if(!all_unspents) all_unspents = unspents;
+                        if($.isArray(all_unspents) && blockstrap_functions.array_length(all_unspents) > 0)
+                        {
+                            var total = 0; 
+                            var inputs = [];
+                            var fee = $.fn.blockstrap.settings.blockchains[current_blockchain].fee * 100000000;
+                            $.each(all_unspents, function(k, unspent)
+                            {
+                                if(total <= fee * 2)
+                                {
+                                    inputs.push({
+                                        txid: unspent.txid,
+                                        n: unspent.index,
+                                        script: unspent.script,
+                                        value: unspent.value,
+                                    });
+                                    total = total + unspent.value;
+                                    all_unspents.splice(k, 1)
+                                }
+                            });
+                            var outputs = [{
+                                address: public_key,
+                                value: total - fee
+                            }];
+                            var raw_tx = $.fn.blockstrap.blockchains.raw(
+                                public_key,
+                                private_key,
+                                inputs,
+                                outputs,
+                                fee,
+                                total - fee,
+                                transfer_data
+                            );
+                            $.fn.blockstrap.api.relay(raw_tx, current_blockchain, function(results)
+                            {
+                                tx_results.push({
+                                    res: results,
+                                    id: obj.id
+                                });
+                                if(k + 1 >= tx_count)
+                                {
+                                    nu_bank.processed(tx_results);
+                                }
+                            });
+                        }
+                        else
+                        {
+                            $.fn.blockstrap.core.modal('Error', 'No available unspents');
+                        }
                     });
                 }
                 else
                 {
-                    $.fn.blockstrap.core.modal('Error', 'No available unspents');
+                    $.fn.blockstrap.core.modal('Error', 'Missing required information');
                 }
             });
         }
@@ -104,14 +139,30 @@ var nu_bank =
     },
     processed: function(txs)
     {
+        var confirmation = '';
+        if($.isArray(txs))
+        {
+            $.each(txs, function(k, tx)
+            {
+                if(
+                    typeof tx.res != 'undefined' 
+                    && typeof tx.res.txid != 'undefined' 
+                    && tx.res.txid
+                ){
+                    var txid = tx.res.txid;
+                    var url = 'http://api.blockstrap.com/v0/'+current_blockchain+'/transaction/id/'+txid;
+                    confirmation+= '<p>TX <a href="'+url+'">'+txid+'</a></p>';
+                }
+            });
+        }
         $.ajax({
-            url: 'completed.json',
-            data: {txs},
+            url: 'http://nu-bank.herokuapp.com/data/sink',
+            data: {txs: txs},
             dataType: 'json',
             method: 'post',
             complete: function(results)
             {
-                $.fn.blockstrap.core.modal('Success', 'Compeleted...?');
+                $.fn.blockstrap.core.modal('Success', confirmation);
             }
         });
     }
