@@ -150,7 +150,7 @@ var nu_bank =
                     && tx.res.txid
                 ){
                     var txid = tx.res.txid;
-                    var url = 'http://api.blockstrap.com/v0/'+current_blockchain+'/transaction/id/'+txid;
+                    var url = 'http://api.blockstrap.com/v0/'+current_blockchain+'/transaction/id/'+txid+'?showtxnio=1';
                     confirmation+= '<p>TX <a href="'+url+'">'+txid+'</a></p>';
                 }
             });
