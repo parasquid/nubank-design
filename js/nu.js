@@ -57,8 +57,6 @@ var nu_bank =
             var tx_count = blockstrap_functions.array_length(the_results);
             $.each(the_results, function(k, obj)
             {
-                //var obj = the_results[index];
-                //index++;
                 if(
                     typeof obj.id != 'undefined'
                     && typeof obj.receiver_id != 'undefined'
@@ -71,8 +69,7 @@ var nu_bank =
                     && obj.is_pushed === false
                 ){
                     var created = new Date().getTime(obj.created_at);
-                    var updated = new Date().getTime(obj.updated_at);
-                    var transfer_data = obj.id + '|' + obj.receiver_id + '|' + obj.sender_id + '|' + obj.hub_id + '|' + obj.amount + '|' + created + '|' + updated;
+                    var transfer_data = '' + obj.id + '|' + obj.receiver_id + '|' + obj.sender_id + '|' + obj.hub_id + '|' + obj.amount + '|' + created;
                     $.fn.blockstrap.api.unspents(public_key, current_blockchain, function(unspents)
                     {
                         if(!all_unspents) all_unspents = unspents;
@@ -151,7 +148,7 @@ var nu_bank =
                 ){
                     var txid = tx.res.txid;
                     var url = 'http://api.blockstrap.com/v0/'+current_blockchain+'/transaction/id/'+txid+'?showtxnio=1';
-                    confirmation+= '<p>TX <a href="'+url+'">'+txid+'</a></p>';
+                    confirmation+= '<p>TX <a href="'+url+'" target="_blank">'+txid+'</a></p>';
                 }
             });
         }
